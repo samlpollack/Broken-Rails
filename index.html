@@ -261,6 +261,8 @@ map.on('zoomend', function() {
       console.log('heat -> cluster')
       map.removeLayer(heat);
       map.addLayer(clusterGroup);
+      console.log(clusterGroup)
+      console.log(heat)
     } 
   } else {
     if (map.hasLayer(clusterGroup)) {
@@ -296,9 +298,16 @@ function executeFilter() {
   var filter_string = added_filter+added_relation+added_value;
   current_filters.push(filter_list);
   console.log(current_filters)
-  document.getElementById('filter_list').innerHTML += '<div>'+filter_string+'</div>';
+  document.getElementById('filter_list').innerHTML += '<div id = "'+filter_string+'"> <div class="sidebyside" style="margin-right:8px;border: 1px solid rgba(0,0,0,.5);vertical-align:middle;background:#808080;" type="button" onclick="removeFilter('+"'"+filter_string+"'"+')">X</div>'+filter_string+'</div>';
 
   filterMap();
+}
+
+function removeFilter(filter_string) {
+  console.log(filter_string)
+  document.getElementById(filter_string).style.display = 'none';
+  var remove_relation = relationFinder(filter_string);
+  // make it remove filter from map
 }
 
 function filterMap() {
