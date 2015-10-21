@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Broken Rails Interactive Map</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v2.2.2/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v2.2.2/mapbox.css' rel='stylesheet' />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="filter_dict.js"></script>
+<script src='d3.v3.min.js'></script>
+
+
+
+<style>
+  body { margin:0; padding:0; font:Helvetica;}
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+
+  h2 {
+    font-size: 20px;
+    text-align: center;
+  }
+  .heading {
+    font-size:40px;
+    margin:0;
+    font-weight:700;
+    font: Helvetica; 
+  	position: absolute;
+  	top: 0;left: 0;
+  	height:60px;
+  	line-height:60px;
+  	width: 100%;
+  	background: #236085;
+  	color: #FFFFFF;
+    vertical-align: middle;
+    text-align:center;
+  }
+
+  #filter_adder {
+    position: absolute;
+    width: 20%;
+    left:80%;
+    color: #FFFFFF;
+    vertical-align: middle;
+    text-align:center;
+    height: 60px;
+    line-height: 60px;
+    font: Helvetica; 
+    font-size: 40px;
+  }
+  #filter_adder:hover{
+    cursor:pointer;
+  }
+  #filter_adder:active{
+    background:#236085;
+    color:#D2D2D2;
+  }
+  #filter {
+    width: 20%;
+    background: #236085;
+    color: #FFFFFF;
+    height: 55px;
+    position: absolute;
+    top:5px;
+    right:0%;
+    font-size: 10px;
+    border: 0px solid rgba(0,0,0,1); 
+    padding-left: 3px;
+  }
+  .sidebyside {
+    display: inline-block;
+  }
+  #closebutton {
+    display: block;
+    border: 1px solid rgba(0,0,0,.25);
+    width: 10px;
+    height: 10px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 8px;
+  }
+  #closebutton:hover{
+    cursor:pointer;
+  }
+
+  .side_panel {
+    position: absolute;
+    top:60px;left:0px;
+    height:100%;
+    width: 20%;
+    background: #FFFFFF;
+    color: #000;
+    opacity: .5;
+  }
+  #filter_list {
+    display: block;
+    margin-left: 10px;
+  }
+  .stats {
+    display: block;
+  }
+
+</style>
+</head>
+<body>
+  <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-heat/v0.1.3/leaflet-heat.js'></script>
+  <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>
+  <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+  <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
+  <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
+  <script src="stations.js"></script>
+
+<div id='map'></div>
+<div class='heading'>
+	Broken Rails Interactive Map
+</div>
+
+<div class='side_panel'>
+  <h2>FILTERS</h2>
+  <div id='filter_list' class='filters'></div>
+  <h2>STATS</h2>
+  <div class='stats'>
+    stats 1
+  </div>
+</div>
+
+<div id='filter_adder' type='button' onclick='addFilter()'>
+  + filter
+</div>
+<div id='filter' style='display:none;'>
+  <div id='closebutton' type='button' onclick='closeBox()'>X</div>
+  <div>Select One
+    <select id='select-list' style='background:#236085;'>
+      <option value='0'>Priority</option>
+      <option value='1'>DvCd</option>
+      <option value='2'>TrackType</option>
+      <option value='3'>Div</option>
+      <option value='4'>LineName</option>
+      <option value='5'>Line</option>
+      <option value='6'>Track</option>
+      <option value='7'>DefectType</option>
+      <option value='8'>PlateType</option>
+      <option value='9'>RailWeight</option>
+      <option value='10'>RailType</option>
+      <option value='11'>Manufacturer</option>
+      <option value='12'>FoundDate</option>
+      <option value='13'>ProducedDate</option>
+      <option value='14'>Million Gross Tons</option>
+      <option value='15'>RailAge</option>
+      <option value='16'>latitude</option>
+      <option value='17'>longitude</option>
+    </select>
+  </div>
+  <div id='categorical_options' style='display:none;'>
+    <div class='sidebyside'> = </div>
+    <div id='categorical_values' class='sidebyside'>1</div>
+  </div>
+  <div id='numerical_options' style='display:none;'>
+    <div id='relation' class='sidebyside'>
+      <select id='select-relation' style='background:#236085;'>
+        <option value='0'>=</option>
+        <option value='1'>></option>
+        <option value='2'><</option>
+      </select>
+    </div>
+    <div id='numerical_value' class='sidebyside'>
+      <form><input type='number' style='background:#236085;' id='numerical_input'><input type='button' style='background:#236085;' value='Add Filter' onclick='executeFilter()'></form>
+    </div>
+  </div>
+  <div id='date_options' style='display:none;'>
+    <div id='date_relation' class='sidebyside'>
+      <select id='select_date_relation' style='background:#236085;'>
+        <option value='0'>=</option>
+        <option value='1'>></option>
+        <option value='2'><</option>
+      </select>
+    </div>
+    <div id='date_value' class='sidebyside'>
+      <form><input type='date' style='background:#236085;' id='date_input'><input type='button' style='background:#236085;' value='Add Filter' onclick='executeFilter()'></form>
+    </div>
+  </div>
+</div>
+<script>
+
+var categorical_filters = ['Priority', 'DvCd', 'TrackType', 'Div', 'LineName', 'Line', 'Track', 'DefectType', 'PlateType', 'RailWeight', 'RailType', 'Manufacturer'];
+var numerical_filters = ['Million Gross Tons', 'RailAge', 'latitude', 'longitude'];
+var date_filters = ['FoundDate', 'ProducedDate']
+var all_filters = ['Priority', 'DvCd', 'TrackType', 'Div', 'LineName', 'Line', 'Track', 'DefectType', 'PlateType', 'RailWeight', 'RailType', 'Manufacturer', 'FoundDate', 'ProducedDate', 'Million Gross Tons', 'RailAge', 'latitude', 'longitude'];
+var added_filter = '';
+var relations = ['=','>','<'];
+var added_relation = '';
+var values = [];
+var added_value = '';
+var current_filters = [];
+
+var categorical_options = d3.select('#categorical_options');
+
+d3.select('#select-list').on("change", function(){
+  var selection = all_filters[eval(d3.select(this).property('value'))];
+  added_filter = selection;
+  if (categorical_filters.indexOf(selection) >= 0) {
+    values = filter_dict[selection];
+    document.getElementById('numerical_options').style.display = 'none';
+    document.getElementById('date_options').style.display = 'none';
+    document.getElementById('categorical_options').style.display = 'block';
+    var innerhtml = '<div><select id="select-categorical" style="background:#236085;">';
+    var n = 0;
+    for (value in values) {
+      innerhtml += '<option value="'+n+'">'+values[n]+'</option>';
+      n += 1;
+    }
+    innerhtml += '</select><input type="button" style="background:#236085;" value="Add Filter" onclick="executeFilter()"></form></div>';
+    document.getElementById('categorical_values').innerHTML = innerhtml;
+  } else if(numerical_filters.indexOf(selection) >= 0) {
+    document.getElementById('categorical_options').style.display = 'none';
+    document.getElementById('date_options').style.display = 'none';
+    document.getElementById('numerical_options').style.display = 'block';
+  } else {
+    document.getElementById('categorical_options').style.display = 'none';
+    document.getElementById('numerical_options').style.display = 'none';
+    document.getElementById('date_options').style.display = 'block';
+  }
+})
+
+L.mapbox.accessToken = 'pk.eyJ1Ijoic2FtbHBvbGxhY2siLCJhIjoiNmFkOWY2MzEyY2M1MWNkMTcxZTViNGRjNmE5YmU0NDUifQ.1GsvK3aSrXn9HseAu76Y1w';
+var map = L.mapbox.map('map', 'mapbox.streets', {zoomControl: false})
+	.setView([40.73, -73.95],12);
+new L.Control.Zoom({position:'bottomright'}).addTo(map);
+
+
+
+
+
+
+var defects = L.mapbox.featureLayer();
+defects.loadURL('map_data.geojson');
+
+/*heat map*/ /*cluster map*/
+var heat = L.heatLayer([]).addTo(map);
+var clusterGroup = new L.MarkerClusterGroup();
+var mylayers = L.layerGroup([heat,clusterGroup]);
+defects.on('ready', function(e) {
+    // Zoom the map to the bounds of the markers.
+    // map.fitBounds(layer.getBounds());
+    // Add each marker point to the heatmap.
+    defects.eachLayer(function(l) {
+      heat.addLatLng(l.getLatLng());
+    });
+    e.target.eachLayer(function(layer) {
+      clusterGroup.addLayer(layer);
+    });
+  });
+
+
+map.on('zoomend', function() {
+  console.log('Zoom ' + map.getZoom())
+  if (map.getZoom() > 13) {
+    if (map.hasLayer(heat)) {
+      console.log('heat -> cluster')
+      map.removeLayer(heat);
+      map.addLayer(clusterGroup);
+    } 
+  } else {
+    if (map.hasLayer(clusterGroup)) {
+      console.log('cluster -> heat')
+      map.removeLayer(clusterGroup);
+      map.addLayer(heat);
+    }
+  }
+});
+
+function addFilter() {
+  document.getElementById('filter').style.display = 'block';
+}
+function closeBox() {
+  document.getElementById('filter').style.display = 'none';
+}
+function executeFilter() {
+  document.getElementById('categorical_options').style.display = 'none';
+  document.getElementById('numerical_options').style.display = 'none';
+  document.getElementById('date_options').style.display = 'none';
+  closeBox();
+  if (categorical_filters.indexOf(added_filter) >= 0) {
+    added_relation = '=';
+    added_value = String(values[eval(d3.select('#select-categorical').property('value'))]);
+  } else if (numerical_filters.indexOf(added_filter) >= 0) {
+    added_relation = relations[eval(d3.select('#select-relation').property('value'))];
+    added_value = document.getElementById('numerical_input').value;
+  } else if (date_filters.indexOf(added_filter) >= 0) {
+    added_relation = relations[eval(d3.select('#select_date_relation').property('value'))];
+    added_value = document.getElementById('date_input').value;
+  }
+  var filter_list = [added_filter,added_relation,added_value];
+  var filter_string = added_filter+added_relation+added_value;
+  current_filters.push(filter_list);
+  console.log(current_filters)
+  document.getElementById('filter_list').innerHTML += '<div>'+filter_string+'</div>';
+
+  filterMap();
+}
+
+function filterMap() {
+  map.removeLayer(clusterGroup);
+  map.removeLayer(heat);
+  heat = L.heatLayer([]);
+  clusterGroup = new L.MarkerClusterGroup();
+  
+  defects.eachLayer(function(layer) {
+    if (filterLayer(layer,current_filters)) {
+      heat.addLatLng(layer.getLatLng());
+      clusterGroup.addLayer(layer);
+    }
+  });
+
+  if (map.getZoom() > 13) {
+    map.addLayer(clusterGroup);
+  } else {
+    map.addLayer(heat);
+  }
+
+}
+
+function relationFinder(filterString) {
+  if ('=' in filterString) {
+    return ['=',filterString.indexOf('=')];
+  } else if ('>' in filterString) {
+    return ['>',filterString.indexOf('>')];
+  } else if ('<' in filterString) {
+    return ['<',filterString.indexOf('<')];
+  }
+}
+
+function filterLayer(layer,filters) {
+  // return true if feature passes through filter, false if feature should be removed.
+  var filtered = false;
+  for (filter in filters) {
+    if (current_filters[filter][0] == 'Priority') {
+      if (layer.feature.properties.Priority == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'DvCd') {
+      if (layer.feature.properties.DvCd == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'TrackType') {
+      if (layer.feature.properties.TrackType == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'Div') {
+      if (layer.feature.properties.Div == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'LineName') {
+      if (layer.feature.properties.LineName == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'Line') {
+      if (layer.feature.properties.Line == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'Track') {
+      if (layer.feature.properties.Track == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'DefectType') {
+      if (layer.feature.properties.DefectType == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'PlateType') {
+      if (layer.feature.properties.PlateType == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'RailWeight') {
+      if (layer.feature.properties.RailWeight == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'RailType') {
+      if (layer.feature.properties.RailType == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'Manufacturer') {
+      if (layer.feature.properties.Manufacturer == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    } else if (current_filters[filter][0] == 'LineName') {
+      if (layer.feature.properties.LineName == current_filters[filter][2]) {
+        continue;
+      } else {
+        filtered = true;
+        break;
+      }
+    }
+  }
+  return !filtered;
+}
+
+</script>
+</body>
+</html>
