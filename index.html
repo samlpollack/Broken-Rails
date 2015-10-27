@@ -101,7 +101,7 @@
     display: block;
     text-align: center;
     margin-right: 10px;
-  }
+  } 
   .filter_remover {
     margin-right:8px;
     border: 1px solid rgba(0,0,0,.5);
@@ -298,6 +298,7 @@ function executeFilter() {
   } else if (date_filters.indexOf(added_filter) >= 0) {
     added_relation = relations[eval(d3.select('#select_date_relation').property('value'))];
     added_value = document.getElementById('date_input').value;
+    console.log(added_value)
   }
   var filter_list = [added_filter,added_relation,added_value];
   var filter_string = added_filter+added_relation+added_value;
@@ -411,96 +412,302 @@ function filterLayer(layer,filters) {
   // return true if feature passes through filter, false if feature should be removed.
   var filtered = false;
   for (filter in filters) {
-    if (current_filters[filter][0] == 'Priority') {
-      if (layer.feature.properties.Priority == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
+    if (categorical_filters.indexOf(current_filters[filter][0]) >=0) {
+      if (current_filters[filter][0] == 'Priority') {
+        if (layer.feature.properties.Priority == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'DvCd') {
+        if (layer.feature.properties.DvCd == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'TrackType') {
+        if (layer.feature.properties.TrackType == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'Div') {
+        if (layer.feature.properties.Div == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'LineName') {
+        if (layer.feature.properties.LineName == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'Line') {
+        if (layer.feature.properties.Line == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'Track') {
+        if (layer.feature.properties.Track == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'DefectType') {
+        if (layer.feature.properties.DefectType == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'PlateType') {
+        if (layer.feature.properties.PlateType == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'RailWeight') {
+        if (layer.feature.properties.RailWeight == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'RailType') {
+        if (layer.feature.properties.RailType == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'Manufacturer') {
+        if (layer.feature.properties.Manufacturer == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      } else if (current_filters[filter][0] == 'LineName') {
+        if (layer.feature.properties.LineName == current_filters[filter][2]) {
+          continue;
+        } else {
+          filtered = true;
+          break;
+        }
+      }       
+    } else if (numerical_filters.indexOf(current_filters[filter][0]) >=0) {
+      if (current_filters[filter][0] == 'Million Gross Tons') {
+        if (current_filters[filter][1] == '=') {
+          if (parseFloat(layer.feature.properties['Million Gross Tons']) == parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '>') {
+          if (parseFloat(layer.feature.properties['Million Gross Tons']) > parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '<') {
+          if (parseFloat(layer.feature.properties['Million Gross Tons']) < parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        }        
+      } else if (current_filters[filter][0] == 'RailAge') {
+        if (current_filters[filter][1] == '=') {
+          if (parseFloat(layer.feature.properties['RailAge'])/365 == parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '>') {
+          if (parseFloat(layer.feature.properties['RailAge'])/365 > parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '<') {
+          if (parseFloat(layer.feature.properties['RailAge'])/365 < parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        }        
+      } else if (current_filters[filter][0] == 'latitude') {
+        if (current_filters[filter][1] == '=') {
+          if (parseFloat(layer.feature.geometry.coordinates[1]) == parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '>') {
+          if (parseFloat(layer.feature.geometry.coordinates[1]) > parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '<') {
+          if (parseFloat(layer.feature.geometry.coordinates[1]) < parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        }        
+      } else if (current_filters[filter][0] == 'longitude') {
+        if (current_filters[filter][1] == '=') {
+          if (parseFloat(layer.feature.gemoetry.coordinates[0]) == parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '>') {
+          if (parseFloat(layer.feature.geometry.coordinates[0]) > parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '<') {
+          if (parseFloat(layer.feature.geometry.coordinates[0]) < parseFloat(current_filters[filter][2])) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        }        
       }
-    } else if (current_filters[filter][0] == 'DvCd') {
-      if (layer.feature.properties.DvCd == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'TrackType') {
-      if (layer.feature.properties.TrackType == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'Div') {
-      if (layer.feature.properties.Div == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'LineName') {
-      if (layer.feature.properties.LineName == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'Line') {
-      if (layer.feature.properties.Line == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'Track') {
-      if (layer.feature.properties.Track == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'DefectType') {
-      if (layer.feature.properties.DefectType == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'PlateType') {
-      if (layer.feature.properties.PlateType == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'RailWeight') {
-      if (layer.feature.properties.RailWeight == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'RailType') {
-      if (layer.feature.properties.RailType == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'Manufacturer') {
-      if (layer.feature.properties.Manufacturer == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
-      }
-    } else if (current_filters[filter][0] == 'LineName') {
-      if (layer.feature.properties.LineName == current_filters[filter][2]) {
-        continue;
-      } else {
-        filtered = true;
-        break;
+  
+    } else if (date_filters.indexOf(current_filters[filter][0]) >=0) {
+      if (current_filters[filter][0] == 'FoundDate') {
+        var date = layer.feature.properties.FoundDate;
+        var slash1 = date.indexOf('/');
+        var slash2 = date.lastIndexOf('/');
+        var month = parseInt(date.slice(0,slash1));
+        var day = parseInt(date.slice(slash1+1,slash2));
+        var year = parseInt(date.slice(slash2+1,date.length));
+        if (year < 20) {
+          year += 2000;
+        } else if (year < 100) {
+          year += 1900;
+        }
+
+        var filterDate = current_filters[filter][2];
+        var dash1 = filterDate.indexOf('-');
+        var dash2 = filterDate.lastIndexOf('-');
+        var filterYear = parseInt(filterDate.slice(0,dash1));
+        var filterMonth = parseInt(filterDate.slice(dash1+1,dash2));
+        var filterDay = parseInt(filterDate.slice(dash2+1,filterDate.length));
+
+        if (current_filters[filter][1] == '=') {
+          if (year == filterYear & month == filterMonth & day == filterDay) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if(current_filters[filter][1] == '>') {
+          if (year > filterYear) {
+            continue;
+          } else if (year < filterYear) {
+            filtered = true;
+            break;
+          } else if (year == filterYear) {
+            if (month > filterMonth) {
+              continue;
+            } else if (month < filterMonth) {
+              filtered = true;
+              break;
+            } else if (month == filterMonth) {
+              if (day > filterDay) {
+                continue;
+              } else {
+                filtered = true;
+                break;
+              }
+            }
+          }
+        } else if(current_filters[filter][1] == '<') {
+          if (year < filterYear) {
+            continue;
+          } else if (year > filterYear) {
+            filtered = true;
+            break;
+          } else if (year == filterYear) {
+            if (month < filterMonth) {
+              continue;
+            } else if (month > filterMonth) {
+              filtered = true;
+              break;
+            } else if (month == filterMonth) {
+              if (day < filterDay) {
+                continue;
+              } else {
+                filtered = true;
+                break;
+              }
+            }
+          }
+        }
+      } else if (current_filters[filter][0] == 'ProducedDate') {
+        var date = parseInt(layer.feature.properties.ProducedDate);
+        if (date < 20) {
+          date += 2000;
+        } else if (date < 100) {
+          date += 1900;
+        } 
+
+        var filterDate = current_filters[filter][2];
+        var dash1 = filterDate.indexOf('-');
+        var dash2 = filterDate.lastIndexOf('-');
+        var filterYear = parseInt(filterDate.slice(0,dash1));
+        var filterMonth = parseInt(filterDate.slice(dash1+1,dash2));
+        var filterDay = parseInt(filterDate.slice(dash2+1,filterDate.length));
+
+        if (current_filters[filter][1] == '=') {
+          if (date == filterYear) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '>') {
+          if (date > filterYear) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        } else if (current_filters[filter][1] == '<') {
+          if (date < filterYear) {
+            continue;
+          } else {
+            filtered = true;
+            break;
+          }
+        }
       }
     }
   }
