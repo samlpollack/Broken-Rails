@@ -116,6 +116,9 @@
     margin-left: 10px;
     margin-right: 10px;
   }
+  .indent {
+    margin-left: 10px;
+  }
 
 </style>
 </head>
@@ -141,6 +144,11 @@
     <div id='defect-count'>Defect Count: <div id='defect-count-value' class='sidebyside'></div></div>
     <div id='mean-lifetime'>Mean Lifetime: <div id='mean-lifetime-value' class='sidebyside'></div></div>
     <div id='mean-tonnage'>Mean Tonnage: <div id='mean-tonnage-value' class='sidebyside'></div></div>
+    <div id='common-defects'>Defect Types: 
+      <div id='defect1' class='indent'></div>
+      <div id='defect2' class='indent'></div>
+      <div id='defect3' class='indent'></div>
+    </div>
   </div>
 </div>
 
@@ -347,6 +355,7 @@ function filterMap() {
   var lifetime_count = 0;
   var mean_tonnage = 0;
   var tonnage_count = 0;
+  var defect_types = {};
   
   defects.eachLayer(function(layer) {
     if (filterLayer(layer,current_filters)) {
@@ -381,6 +390,13 @@ function filterMap() {
         tonnage_count += 1;
       }
 
+      var defect_type = layer.feature.properties.DefectType;
+      if (defect_type in defect_types) {
+        defect_types[defect_type] += 1;
+      } else {
+        defect_types[defect_type] = 1;
+      }
+
     }
   });
 
@@ -389,6 +405,32 @@ function filterMap() {
   mean_tonnage = Math.round(100*mean_tonnage/tonnage_count)/100;
   document.getElementById('mean-tonnage-value').innerHTML = mean_tonnage + ' Million Gross Tons';
   document.getElementById('defect-count-value').innerHTML = defect_count + ' Defects';
+
+  var defect_type_count = 0;
+  var first_defect = [0,''];
+  var second_defect = [0,''];
+  var third_defect = [0,''];
+  for (defect in defect_types) {
+    var count = defect_types[defect];
+    if (count > first_defect[0]) {
+      third_defect = second_defect;
+      second_defect = first_defect;
+      first_defect = [count,defect];
+    } else if (count > second_defect[0]) {
+      third_defect = second_defect;
+      second_defect = [count,defect];
+    } else if (count > third_defect[0]) {
+      third_defect = [count,defect];
+    }
+  }
+  first_defect[0] = Math.round(first_defect[0]*100/defect_count);
+  second_defect[0] = Math.round(second_defect[0]*100/defect_count);
+  third_defect[0] = Math.round(third_defect[0]*100/defect_count);
+
+  document.getElementById('defect1').innerHTML = first_defect[1] + ' ' + first_defect[0] + '%';
+  document.getElementById('defect2').innerHTML = second_defect[1] + ' ' + second_defect[0] +'%';
+  document.getElementById('defect3').innerHTML = third_defect[1] + ' ' + third_defect[0] + '%';
+
 
   if (map.getZoom() > 13) {
     map.addLayer(clusterGroup);
