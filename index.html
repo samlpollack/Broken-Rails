@@ -396,6 +396,7 @@ clusterGroup.on('clusterclick', function(a) {
     document.getElementById('popup').style.display = 'block';
 
     var station_name = '';
+    var division = '';
     var timeline = {2005:0,2006:0,2007:0,2008:0,2009:0,2010:0,2011:0,2012:0,2013:0,2014:0,2015:0};
     var defect_count = 0;
     var mean_lifetime = 0;
@@ -414,6 +415,7 @@ clusterGroup.on('clusterclick', function(a) {
       var layer = layers[i];
       var props = layer.feature.properties;
       station_name = props['StationName'];
+      division = props['Div'];
 
       var foundDate = layer.feature.properties.FoundDate;
       var index = foundDate.lastIndexOf('/');
@@ -479,7 +481,7 @@ clusterGroup.on('clusterclick', function(a) {
 
 
 
-    document.getElementById('popup-title').innerHTML = '<h2>'+station_name+'</h2>';
+    document.getElementById('popup-title').innerHTML = '<h2>'+station_name+', '+division+'</h2>';
     mean_lifetime = Math.round(100*mean_lifetime/(365*lifetime_count))/100;
     document.getElementById('popup-mean-lifetime-value').innerHTML = mean_lifetime + ' Years';
     mean_tonnage = Math.round(100*mean_tonnage/tonnage_count)/100;
