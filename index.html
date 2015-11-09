@@ -208,6 +208,10 @@
         <div id='dvcd2' class='indent'></div>
         <div id='dvcd3' class='indent'></div>
       </div>
+      <div id='rail-types'><br>Rail Types:
+        <div id='cwr' class='indent'></div>
+        <div id='bolted' class='indent'></div>
+      </div>
     </div>
   </div>
   <div id='stats-footer'>Data until July 3rd, 2015</div>
@@ -233,6 +237,10 @@
       <div id='popup-dvcd1' class='indent'></div>
       <div id='popup-dvcd2' class='indent'></div>
       <div id='popup-dvcd3' class='indent'></div>
+    </div>
+    <div id='popup-rail-types'><br>Rail Types:
+      <div id='popup-cwr' class='indent'></div>
+      <div id='popup-bolted' class='indent'></div>
     </div>
   </div>
 </div>
@@ -399,6 +407,8 @@ clusterGroup.on('clusterclick', function(a) {
     var dvcd_types = {};
     var track_count = 0;
     var dvcd_count = 0;
+    var cwr = 0;
+    var bolted = 0;
 
     for (i in layers) {
       var layer = layers[i];
@@ -457,6 +467,13 @@ clusterGroup.on('clusterclick', function(a) {
         } else {
           dvcd_types[dvcd_type] = 1;
         }
+      }
+
+      var rail_type = props['RailType'];
+      if (rail_type == 'CWR') {
+        cwr += 1;
+      } else if (rail_type == 'BOLTED') {
+        bolted += 1;
       }
     }
 
@@ -540,6 +557,13 @@ clusterGroup.on('clusterclick', function(a) {
     document.getElementById('popup-dvcd1').innerHTML = first_dvcd[1] + ' ' + first_dvcd[0] + '%';
     document.getElementById('popup-dvcd2').innerHTML = second_dvcd[1] + ' ' + second_dvcd[0] +'%';
     document.getElementById('popup-dvcd3').innerHTML = third_dvcd[1] + ' ' + third_dvcd[0] + '%';
+
+
+    var plate_count = cwr + bolted;
+    cwr = Math.round(100*cwr/plate_count);
+    bolted = Math.round(100*bolted/plate_count);
+    document.getElementById('popup-cwr').innerHTML = 'CWR ' + cwr + '%';
+    document.getElementById('popup-bolted').innerHTML = 'BOLTED ' + bolted + '%';
 
     var data = [];
     
@@ -651,6 +675,8 @@ function filterMap() {
   var dvcd_types = {};
   var track_count = 0;
   var dvcd_count = 0;
+  var cwr = 0;
+  var bolted = 0;
   
   defects.eachLayer(function(layer) {
     if (filterLayer(layer,current_filters)) {
@@ -712,7 +738,13 @@ function filterMap() {
           dvcd_types[dvcd_type] = 1;
         }
       }
-      
+
+      var rail_type = layer.feature.properties['RailType'];
+      if (rail_type == 'CWR') {
+        cwr += 1;
+      } else if (rail_type == 'BOLTED') {
+        bolted += 1;
+      }
 
     }
   });
@@ -794,6 +826,13 @@ function filterMap() {
   document.getElementById('dvcd1').innerHTML = first_dvcd[1] + ' ' + first_dvcd[0] + '%';
   document.getElementById('dvcd2').innerHTML = second_dvcd[1] + ' ' + second_dvcd[0] +'%';
   document.getElementById('dvcd3').innerHTML = third_dvcd[1] + ' ' + third_dvcd[0] + '%';
+
+  var plate_count = cwr + bolted;
+  cwr = Math.round(100*cwr/plate_count);
+  bolted = Math.round(100*bolted/plate_count);
+  document.getElementById('cwr').innerHTML = 'CWR ' + cwr + '%';
+  document.getElementById('bolted').innerHTML = 'BOLTED ' + bolted + '%';
+
 
   var data = [];
 
