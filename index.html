@@ -6,11 +6,13 @@
 <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 <script src='https://api.mapbox.com/mapbox.js/v2.2.2/mapbox.js'></script>
 <link href='https://api.mapbox.com/mapbox.js/v2.2.2/mapbox.css' rel='stylesheet' />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-<script src="interactive_map_resources/filter_dict.js"></script>
-<script src='interactive_map_resources/d3.v3.min.js'></script>
 
+<script src="interactive_map_resources/filter_dict.js"></script>
+<script src="interactive_map_resources/flot/excanvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="interactive_map_resources/flot/jquery.flot.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
 
 <style>
@@ -87,11 +89,12 @@
   .side_panel {
     position: absolute;
     top:60px;left:0px;
-    height:100%;
+    height: 100%;
     width: 20%;
     color: #FFFFFF;
     background: #236085;
     opacity: 1;
+
   }
   #filter_list {
     display: block;
@@ -119,6 +122,51 @@
   .indent {
     margin-left: 10px;
   }
+  #time-series {
+    height:200px;
+    background: #FFFFFF;
+    color: #000000;
+  }
+  #popup {
+    position: absolute;
+    display: none;
+    width: 20%;
+    left:21%;
+    background: #236085;
+    color: #FFFFFF;
+    opacity: .8;
+  }
+  .popup-stats {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  #popup-time-series {
+    height:200px;
+    background: #FFFFFF;
+    color: #000000;
+  }
+  #popup-close {
+    position: absolute;
+    display: none;
+    background: #236085;
+    color: #FFFFFF;
+    height: 20px;
+    width: 20%;
+    left:21%;
+    opacity: .8;
+  }
+  #popup-close-button {
+    border: 1px solid rgba(0,0,0,.5); 
+  }
+  #popup-close-button:hover{
+    cursor: pointer;
+  }
+  #stats-footer {
+    position: absolute;
+    bottom: 20px;
+    margin-left: 20px;
+
+  }
 
 </style>
 </head>
@@ -138,19 +186,59 @@
 <div class='side_panel'>
   <h2>FILTERS</h2>
   <div id='filter_list' class='filters'><div id='filter_filler'>- No Filters -</div></div>
-  <h2>STATS</h2>
-  <div class='stats'>
-    <div id='time-series'></div>
-    <div id='defect-count'>Defect Count: <div id='defect-count-value' class='sidebyside'></div></div>
-    <div id='mean-lifetime'>Mean Lifetime: <div id='mean-lifetime-value' class='sidebyside'></div></div>
-    <div id='mean-tonnage'>Mean Tonnage: <div id='mean-tonnage-value' class='sidebyside'></div></div>
-    <div id='common-defects'>Defect Types: 
-      <div id='defect1' class='indent'></div>
-      <div id='defect2' class='indent'></div>
-      <div id='defect3' class='indent'></div>
+  <div id='stats'>
+    <div id='stats-title'><h2>STATS</h2></div>
+    <div class='stats'>
+      <div id='time-series'></div>
+      <div id='defect-count'><br>Defect Count: <div id='defect-count-value' class='sidebyside'></div></div>
+      <div id='mean-lifetime'>Mean Lifetime: <div id='mean-lifetime-value' class='sidebyside'></div></div>
+      <div id='mean-tonnage'>Mean Tonnage: <div id='mean-tonnage-value' class='sidebyside'></div></div>
+      <div id='common-defects'><br>Defect Types: 
+        <div id='defect1' class='indent'></div>
+        <div id='defect2' class='indent'></div>
+        <div id='defect3' class='indent'></div>
+      </div>
+      <div id='common-track-types'><br>Track Types: 
+        <div id='track1' class='indent'></div>
+        <div id='track2' class='indent'></div>
+        <div id='track3' class='indent'></div>
+      </div>
+      <div id='common-dvcds'><br>DvCd Types: 
+        <div id='dvcd1' class='indent'></div>
+        <div id='dvcd2' class='indent'></div>
+        <div id='dvcd3' class='indent'></div>
+      </div>
+    </div>
+  </div>
+  <div id='stats-footer'>Data until July 3rd, 2015</div>
+</div>
+<div id='popup'>
+  <div id='popup-title'></div>
+  <div class='popup-stats'>
+    <div id='popup-time-series'></div>
+    <div id='popup-defect-count'><br>Defect Count: <div id='popup-defect-count-value' class='sidebyside'></div></div>
+    <div id='popup-mean-lifetime'>Mean Lifetime: <div id='popup-mean-lifetime-value' class='sidebyside'></div></div>
+    <div id='popup-mean-tonnage'>Mean Tonnage: <div id='popup-mean-tonnage-value' class='sidebyside'></div></div>
+    <div id='popup-common-defects'><br>Defect Types: 
+      <div id='popup-defect1' class='indent'></div>
+      <div id='popup-defect2' class='indent'></div>
+      <div id='popup-defect3' class='indent'></div>
+    </div>
+    <div id='popup-common-track-types'><br>Track Types: 
+      <div id='popup-track1' class='indent'></div>
+      <div id='popup-track2' class='indent'></div>
+      <div id='popup-track3' class='indent'></div>
+    </div>
+    <div id='popup-common-dvcds'><br>DvCd Types: 
+      <div id='popup-dvcd1' class='indent'></div>
+      <div id='popup-dvcd2' class='indent'></div>
+      <div id='popup-dvcd3' class='indent'></div>
     </div>
   </div>
 </div>
+
+<div id='popup-close'><div id='popup-close-button' class='sidebyside' type='button' onclick='popup_close();'>close</div></div>
+
 
 <div id='filter_adder' type='button' onclick='addFilter()'>
   + filter
@@ -208,7 +296,12 @@
     </div>
   </div>
 </div>
+
+
+
 <script>
+
+$('.side_panel').css('height','-=60px');
 
 var categorical_filters = ['Priority', 'DvCd', 'TrackType', 'Div', 'LineName', 'Line', 'Track', 'DefectType', 'PlateType', 'RailWeight', 'RailType', 'Manufacturer'];
 var numerical_filters = ['Million Gross Tons', 'RailAge', 'latitude', 'longitude'];
@@ -222,7 +315,7 @@ var values = [];
 var added_value = '';
 var current_filters = [];
 
-var categorical_options = d3.select('#categorical_options');
+// var categorical_options = d3.select('#categorical_options');
 
 d3.select('#select-list').on("change", function(){
   selection = all_filters[eval(d3.select(this).property('value'))];
@@ -262,7 +355,9 @@ defects.loadURL('https://raw.githubusercontent.com/samlpollack/Broken-Rails/mast
 
 /*heat map*/ /*cluster map*/
 var heat = L.heatLayer([]).addTo(map);
-var clusterGroup = new L.MarkerClusterGroup();
+var clusterGroup = new L.MarkerClusterGroup({
+  spiderfyOnMaxZoom: false
+});
 
 defects.on('ready', function() {
   filterMap();
@@ -285,6 +380,202 @@ map.on('zoomend', function() {
     }
   }
 });
+
+
+clusterGroup.on('clusterclick', function(a) {
+  if (map.getZoom() == 19) {
+    var layers = a.layer.getAllChildMarkers();
+    document.getElementById('popup').style.display = 'block';
+
+    var station_name = '';
+    var timeline = {2005:0,2006:0,2007:0,2008:0,2009:0,2010:0,2011:0,2012:0,2013:0,2014:0,2015:0};
+    var defect_count = 0;
+    var mean_lifetime = 0;
+    var lifetime_count = 0;
+    var mean_tonnage = 0;
+    var tonnage_count = 0;
+    var defect_types = {};
+    var track_types = {};
+    var dvcd_types = {};
+    var track_count = 0;
+    var dvcd_count = 0;
+
+    for (i in layers) {
+      var layer = layers[i];
+      var props = layer.feature.properties;
+      station_name = props['StationName'];
+
+      var foundDate = layer.feature.properties.FoundDate;
+      var index = foundDate.lastIndexOf('/');
+      var year = parseInt(foundDate.slice(index+1,foundDate.length));
+      if (year < 2000) {
+        year += 2000;
+      }
+      timeline[year] += 1;
+
+      defect_count += 1;
+
+      var lifetime = layer.feature.properties.RailAge;
+      
+      if (lifetime != '') {
+        lifetime = parseInt(lifetime);
+        mean_lifetime += lifetime;
+        lifetime_count += 1;
+      }
+
+      var tonnage = layer.feature.properties['Million Gross Tons'];
+      
+      if (tonnage != '') {
+        tonnage = parseInt(tonnage);
+        mean_tonnage += tonnage;
+        tonnage_count += 1;
+      }
+
+      var defect_type = layer.feature.properties.DefectType;
+      if (defect_type in defect_types) {
+        defect_types[defect_type] += 1;
+      } else {
+        defect_types[defect_type] = 1;
+      }
+
+      var track_type = layer.feature.properties.TrackType;
+      if (track_type != '') {
+        track_count += 1;
+        if (track_type in track_types) {
+          track_types[track_type] += 1;
+        } else {
+          track_types[track_type] = 1;
+        }
+      }
+      
+
+      var dvcd_type = layer.feature.properties.DvCd;
+      if (dvcd_type != '') {
+        dvcd_count += 1;
+        if (dvcd_type in dvcd_types) {
+          dvcd_types[dvcd_type] += 1;
+        } else {
+          dvcd_types[dvcd_type] = 1;
+        }
+      }
+    }
+
+
+
+    document.getElementById('popup-title').innerHTML = '<h2>'+station_name+'</h2>';
+    mean_lifetime = Math.round(100*mean_lifetime/(365*lifetime_count))/100;
+    document.getElementById('popup-mean-lifetime-value').innerHTML = mean_lifetime + ' Years';
+    mean_tonnage = Math.round(100*mean_tonnage/tonnage_count)/100;
+    document.getElementById('popup-mean-tonnage-value').innerHTML = mean_tonnage + ' Million Gross Tons';
+    document.getElementById('popup-defect-count-value').innerHTML = defect_count + ' Defects';
+
+    var first_defect = [0,''];
+    var second_defect = [0,''];
+    var third_defect = [0,''];
+    for (defect in defect_types) {
+      var count = defect_types[defect];
+      if (count > first_defect[0]) {
+        third_defect = second_defect;
+        second_defect = first_defect;
+        first_defect = [count,defect];
+      } else if (count > second_defect[0]) {
+        third_defect = second_defect;
+        second_defect = [count,defect];
+      } else if (count > third_defect[0]) {
+        third_defect = [count,defect];
+      }
+    }
+    first_defect[0] = Math.round(first_defect[0]*100/defect_count);
+    second_defect[0] = Math.round(second_defect[0]*100/defect_count);
+    third_defect[0] = Math.round(third_defect[0]*100/defect_count);
+
+    document.getElementById('popup-defect1').innerHTML = first_defect[1] + ' ' + first_defect[0] + '%';
+    document.getElementById('popup-defect2').innerHTML = second_defect[1] + ' ' + second_defect[0] +'%';
+    document.getElementById('popup-defect3').innerHTML = third_defect[1] + ' ' + third_defect[0] + '%';
+
+    var first_track = [0,''];
+    var second_track = [0,''];
+    var third_track = [0,''];
+    for (track in track_types) {
+      var count = track_types[track];
+      if (count > first_track[0]) {
+        third_track = second_track;
+        second_track = first_track;
+        first_track = [count,track];
+      } else if (count > second_track[0]) {
+        third_track = second_track;
+        second_track = [count,track];
+      } else if (count > third_track[0]) {
+        third_track = [count,track];
+      }
+    }
+    first_track[0] = Math.round(first_track[0]*100/track_count);
+    second_track[0] = Math.round(second_track[0]*100/track_count);
+    third_track[0] = Math.round(third_track[0]*100/track_count);
+
+    document.getElementById('popup-track1').innerHTML = first_track[1] + ' ' + first_track[0] + '%';
+    document.getElementById('popup-track2').innerHTML = second_track[1] + ' ' + second_track[0] +'%';
+    document.getElementById('popup-track3').innerHTML = third_track[1] + ' ' + third_track[0] + '%';
+
+    var first_dvcd = [0,''];
+    var second_dvcd = [0,''];
+    var third_dvcd = [0,''];
+    for (dvcd in dvcd_types) {
+      var count = dvcd_types[dvcd];
+      if (count > first_dvcd[0]) {
+        third_dvcd = second_dvcd;
+        second_dvcd = first_dvcd;
+        first_dvcd = [count,dvcd];
+      } else if (count > second_dvcd[0]) {
+        third_dvcd = second_dvcd;
+        second_dvcd = [count,dvcd];
+      } else if (count > third_dvcd[0]) {
+        third_dvcd = [count,dvcd];
+      }
+    }
+    first_dvcd[0] = Math.round(first_dvcd[0]*100/dvcd_count);
+    second_dvcd[0] = Math.round(second_dvcd[0]*100/dvcd_count);
+    third_dvcd[0] = Math.round(third_dvcd[0]*100/dvcd_count);
+
+    document.getElementById('popup-dvcd1').innerHTML = first_dvcd[1] + ' ' + first_dvcd[0] + '%';
+    document.getElementById('popup-dvcd2').innerHTML = second_dvcd[1] + ' ' + second_dvcd[0] +'%';
+    document.getElementById('popup-dvcd3').innerHTML = third_dvcd[1] + ' ' + third_dvcd[0] + '%';
+
+    var data = [];
+    
+    for (i in timeline){
+      data.push([parseInt(i),timeline[i]]);
+    }
+    var options = {
+      series: {
+          lines: { show: true },
+          points: { show: true }
+      }
+    };
+    $(document).ready(function() {
+      $.plot($('#popup-time-series'), [data],options);
+    });
+
+    document.getElementById('popup').style.top = document.getElementById('filter_list').getBoundingClientRect().bottom + 'px';
+    document.getElementById('popup-close').style.top = String(parseInt(document.getElementById('filter_list').getBoundingClientRect().bottom) - 20) + 'px';
+    document.getElementById('popup-close').style.display = 'block';
+    console.log(document.getElementById('popup').getBoundingClientRect())
+    console.log(document.getElementById('popup-close').getBoundingClientRect())
+  }
+});
+
+function popup_close() {
+  document.getElementById('popup').style.display = 'none';
+  document.getElementById('popup-close').style.display = 'none';
+}
+
+function getPos(el) {
+    // yay readability
+    for (var lx=0, ly=0;
+         el != null;
+         lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
+    return {x: lx,y: ly};
+}
 
 function addFilter() {
   document.getElementById('filter').style.display = 'block';
@@ -356,6 +647,10 @@ function filterMap() {
   var mean_tonnage = 0;
   var tonnage_count = 0;
   var defect_types = {};
+  var track_types = {};
+  var dvcd_types = {};
+  var track_count = 0;
+  var dvcd_count = 0;
   
   defects.eachLayer(function(layer) {
     if (filterLayer(layer,current_filters)) {
@@ -397,6 +692,28 @@ function filterMap() {
         defect_types[defect_type] = 1;
       }
 
+      var track_type = layer.feature.properties.TrackType;
+      if (track_type != '') {
+        track_count += 1;
+        if (track_type in track_types) {
+          track_types[track_type] += 1;
+        } else {
+          track_types[track_type] = 1;
+        }
+      }
+      
+
+      var dvcd_type = layer.feature.properties.DvCd;
+      if (dvcd_type != '') {
+        dvcd_count += 1;
+        if (dvcd_type in dvcd_types) {
+          dvcd_types[dvcd_type] += 1;
+        } else {
+          dvcd_types[dvcd_type] = 1;
+        }
+      }
+      
+
     }
   });
 
@@ -406,7 +723,6 @@ function filterMap() {
   document.getElementById('mean-tonnage-value').innerHTML = mean_tonnage + ' Million Gross Tons';
   document.getElementById('defect-count-value').innerHTML = defect_count + ' Defects';
 
-  var defect_type_count = 0;
   var first_defect = [0,''];
   var second_defect = [0,''];
   var third_defect = [0,''];
@@ -430,6 +746,70 @@ function filterMap() {
   document.getElementById('defect1').innerHTML = first_defect[1] + ' ' + first_defect[0] + '%';
   document.getElementById('defect2').innerHTML = second_defect[1] + ' ' + second_defect[0] +'%';
   document.getElementById('defect3').innerHTML = third_defect[1] + ' ' + third_defect[0] + '%';
+
+  var first_track = [0,''];
+  var second_track = [0,''];
+  var third_track = [0,''];
+  for (track in track_types) {
+    var count = track_types[track];
+    if (count > first_track[0]) {
+      third_track = second_track;
+      second_track = first_track;
+      first_track = [count,track];
+    } else if (count > second_track[0]) {
+      third_track = second_track;
+      second_track = [count,track];
+    } else if (count > third_track[0]) {
+      third_track = [count,track];
+    }
+  }
+  first_track[0] = Math.round(first_track[0]*100/track_count);
+  second_track[0] = Math.round(second_track[0]*100/track_count);
+  third_track[0] = Math.round(third_track[0]*100/track_count);
+
+  document.getElementById('track1').innerHTML = first_track[1] + ' ' + first_track[0] + '%';
+  document.getElementById('track2').innerHTML = second_track[1] + ' ' + second_track[0] +'%';
+  document.getElementById('track3').innerHTML = third_track[1] + ' ' + third_track[0] + '%';
+
+  var first_dvcd = [0,''];
+  var second_dvcd = [0,''];
+  var third_dvcd = [0,''];
+  for (dvcd in dvcd_types) {
+    var count = dvcd_types[dvcd];
+    if (count > first_dvcd[0]) {
+      third_dvcd = second_dvcd;
+      second_dvcd = first_dvcd;
+      first_dvcd = [count,dvcd];
+    } else if (count > second_dvcd[0]) {
+      third_dvcd = second_dvcd;
+      second_dvcd = [count,dvcd];
+    } else if (count > third_dvcd[0]) {
+      third_dvcd = [count,dvcd];
+    }
+  }
+  first_dvcd[0] = Math.round(first_dvcd[0]*100/dvcd_count);
+  second_dvcd[0] = Math.round(second_dvcd[0]*100/dvcd_count);
+  third_dvcd[0] = Math.round(third_dvcd[0]*100/dvcd_count);
+
+  document.getElementById('dvcd1').innerHTML = first_dvcd[1] + ' ' + first_dvcd[0] + '%';
+  document.getElementById('dvcd2').innerHTML = second_dvcd[1] + ' ' + second_dvcd[0] +'%';
+  document.getElementById('dvcd3').innerHTML = third_dvcd[1] + ' ' + third_dvcd[0] + '%';
+
+  var data = [];
+
+  for (i in timeline){
+    data.push([parseInt(i),timeline[i]]);
+  }
+  var options = {
+    series: {
+        lines: { show: true },
+        points: { show: true }
+    }
+  };
+  $(document).ready(function() {
+    $.plot($('#time-series'), [data],options);
+  });
+    
 
 
   if (map.getZoom() > 13) {
@@ -755,6 +1135,7 @@ function filterLayer(layer,filters) {
   }
   return !filtered;
 }
+
 
 </script>
 </body>
