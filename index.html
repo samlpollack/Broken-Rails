@@ -322,6 +322,7 @@ var added_relation = '';
 var values = [];
 var added_value = '';
 var current_filters = [];
+var dvcd_dict = {'100M':'Tangent','200M':'Unguarded Curve','300M':'Guarded Curve','400M':'Switches/Turnouts'};
 
 // var categorical_options = d3.select('#categorical_options');
 
@@ -410,6 +411,7 @@ clusterGroup.on('clusterclick', function(a) {
     var dvcd_count = 0;
     var cwr = 0;
     var bolted = 0;
+
 
     for (i in layers) {
       var layer = layers[i];
@@ -556,9 +558,9 @@ clusterGroup.on('clusterclick', function(a) {
     second_dvcd[0] = Math.round(second_dvcd[0]*100/dvcd_count);
     third_dvcd[0] = Math.round(third_dvcd[0]*100/dvcd_count);
 
-    document.getElementById('popup-dvcd1').innerHTML = first_dvcd[1] + ' ' + first_dvcd[0] + '%';
-    document.getElementById('popup-dvcd2').innerHTML = second_dvcd[1] + ' ' + second_dvcd[0] +'%';
-    document.getElementById('popup-dvcd3').innerHTML = third_dvcd[1] + ' ' + third_dvcd[0] + '%';
+    document.getElementById('popup-dvcd1').innerHTML = dvcd_dict[first_dvcd[1]] + ' ' + first_dvcd[0] + '%';
+    document.getElementById('popup-dvcd2').innerHTML = dvcd_dict[second_dvcd[1]] + ' ' + second_dvcd[0] +'%';
+    document.getElementById('popup-dvcd3').innerHTML = dvcd_dict[third_dvcd[1]] + ' ' + third_dvcd[0] + '%';
 
 
     var plate_count = cwr + bolted;
@@ -827,9 +829,9 @@ function filterMap() {
   second_dvcd[0] = Math.round(second_dvcd[0]*100/dvcd_count);
   third_dvcd[0] = Math.round(third_dvcd[0]*100/dvcd_count);
 
-  document.getElementById('dvcd1').innerHTML = first_dvcd[1] + ' ' + first_dvcd[0] + '%';
-  document.getElementById('dvcd2').innerHTML = second_dvcd[1] + ' ' + second_dvcd[0] +'%';
-  document.getElementById('dvcd3').innerHTML = third_dvcd[1] + ' ' + third_dvcd[0] + '%';
+  document.getElementById('dvcd1').innerHTML = dvcd_dict[first_dvcd[1]] + ' ' + first_dvcd[0] + '%';
+  document.getElementById('dvcd2').innerHTML = dvcd_dict[second_dvcd[1]] + ' ' + second_dvcd[0] +'%';
+  document.getElementById('dvcd3').innerHTML = dvcd_dict[third_dvcd[1]] + ' ' + third_dvcd[0] + '%';
 
   var plate_count = cwr + bolted;
   cwr = Math.round(100*cwr/plate_count);
