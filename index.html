@@ -660,6 +660,8 @@ function removeFilter(filter_string) {
 }
 
 function filterMap() {
+  document.getElementById('popup').style.display = 'none';
+  document.getElementById('popup-close').style.display = 'none';
   map.removeLayer(clusterGroup);
   map.removeLayer(heat);
   heat = L.heatLayer([]);
