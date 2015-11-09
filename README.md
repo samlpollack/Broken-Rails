@@ -1,6 +1,6 @@
 # Broken-Rails
 
-[Mapping Visualization](http://htmlpreview.github.com/?https://github.com/samlpollack/Broken-Rails/blob/master/index.html)
+[Mapping Visualization](https://rawgit.com/samlpollack/Broken-Rails/master/index.html)
 
 The files required to run the visualization are:
 * index.html
