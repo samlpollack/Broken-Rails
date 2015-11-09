@@ -255,24 +255,25 @@
   <div id='closebutton' type='button' onclick='closeBox()'>X</div>
   <div>Select One
     <select id='select-list' style='background:#236085;color:#FFFFFF;'>
-      <option value='0'>Priority</option>
-      <option value='1'>DvCd</option>
-      <option value='2'>TrackType</option>
-      <option value='3'>Div</option>
-      <option value='4'>LineName</option>
-      <option value='5'>Line</option>
-      <option value='6'>Track</option>
-      <option value='7'>DefectType</option>
-      <option value='8'>PlateType</option>
-      <option value='9'>RailWeight</option>
-      <option value='10'>RailType</option>
-      <option value='11'>Manufacturer</option>
-      <option value='12'>FoundDate</option>
-      <option value='13'>ProducedDate</option>
-      <option value='14'>Million Gross Tons</option>
-      <option value='15'>RailAge</option>
-      <option value='16'>latitude</option>
-      <option value='17'>longitude</option>
+      <option value='0'>- Select Filter -</option>
+      <option value='1'>Priority</option>
+      <option value='2'>DvCd</option>
+      <option value='3'>TrackType</option>
+      <option value='4'>Div</option>
+      <option value='5'>LineName</option>
+      <option value='6'>Line</option>
+      <option value='7'>Track</option>
+      <option value='8'>DefectType</option>
+      <option value='9'>PlateType</option>
+      <option value='10'>RailWeight</option>
+      <option value='11'>RailType</option>
+      <option value='12'>Manufacturer</option>
+      <option value='13'>FoundDate</option>
+      <option value='14'>ProducedDate</option>
+      <option value='15'>Million Gross Tons</option>
+      <option value='16'>RailAge</option>
+      <option value='17'>latitude</option>
+      <option value='18'>longitude</option>
     </select>
   </div>
   <div id='categorical_options' style='display:none;background:#236085;color:#FFFFFF;'>
@@ -314,7 +315,7 @@ $('.side_panel').css('height','-=60px');
 var categorical_filters = ['Priority', 'DvCd', 'TrackType', 'Div', 'LineName', 'Line', 'Track', 'DefectType', 'PlateType', 'RailWeight', 'RailType', 'Manufacturer'];
 var numerical_filters = ['Million Gross Tons', 'RailAge', 'latitude', 'longitude'];
 var date_filters = ['FoundDate', 'ProducedDate']
-var all_filters = ['Priority', 'DvCd', 'TrackType', 'Div', 'LineName', 'Line', 'Track', 'DefectType', 'PlateType', 'RailWeight', 'RailType', 'Manufacturer', 'FoundDate', 'ProducedDate', 'Million Gross Tons', 'RailAge', 'latitude', 'longitude'];
+var all_filters = ['not a filter','Priority', 'DvCd', 'TrackType', 'Div', 'LineName', 'Line', 'Track', 'DefectType', 'PlateType', 'RailWeight', 'RailType', 'Manufacturer', 'FoundDate', 'ProducedDate', 'Million Gross Tons', 'RailAge', 'latitude', 'longitude'];
 var selection = '';
 var added_filter = '';
 var relations = ['=','>','<'];
@@ -346,10 +347,14 @@ d3.select('#select-list').on("change", function(){
     document.getElementById('categorical_options').style.display = 'none';
     document.getElementById('date_options').style.display = 'none';
     document.getElementById('numerical_options').style.display = 'block';
-  } else {
+  } else if(date_filters.indexOf(selection) >= 0) {
     document.getElementById('categorical_options').style.display = 'none';
     document.getElementById('numerical_options').style.display = 'none';
     document.getElementById('date_options').style.display = 'block';
+  } else {
+    document.getElementById('categorical_options').style.display = 'none';
+    document.getElementById('numerical_options').style.display = 'none';
+    document.getElementById('date_options').style.display = 'none';
   }
 })
 
@@ -607,6 +612,15 @@ function getPos(el) {
 
 function addFilter() {
   document.getElementById('filter').style.display = 'block';
+  if (categorical_filters.indexOf(selection) >= 0) {
+    document.getElementById('categorical_options').style.display = 'block';
+  }
+  if (numerical_filters.indexOf(selection) >= 0) {
+    document.getElementById('numerical_options').style.display = 'block';
+  }
+  if (date_filters.indexOf(selection) >= 0) {
+    document.getElementById('date_options').style.display = 'block';
+  }
 }
 function closeBox() {
   document.getElementById('filter').style.display = 'none';
@@ -629,12 +643,24 @@ function executeFilter() {
   }
   var filter_list = [added_filter,added_relation,added_value];
   var filter_string = added_filter+added_relation+added_value;
-  current_filters.push(filter_list);
-  console.log(current_filters)
-  document.getElementById('filter_filler').style.display = 'none';
-  document.getElementById('filter_list').innerHTML += '<div id = "'+filter_string+'"> <div class="filter_remover sidebyside" type="button" onclick="removeFilter('+"'"+filter_string+"'"+')">X</div>'+filter_string+'</div>';
+  var already_exists = false;
+  for (i in current_filters) {
+    if (current_filters[i][0] == filter_list[0] & current_filters[i][1] == filter_list[1] &current_filters[i][2] == filter_list[2]) {
+      already_exists = true;
+    }
+  }
 
-  filterMap();
+  if (already_exists) {
+    console.log('filter already exists')
+  } else {
+    current_filters.push(filter_list);
+    console.log(current_filters)
+    document.getElementById('filter_filler').style.display = 'none';
+    document.getElementById('filter_list').innerHTML += '<div id = "'+filter_string+'"> <div class="filter_remover sidebyside" type="button" onclick="removeFilter('+"'"+filter_string+"'"+')">X</div>'+filter_string+'</div>';
+
+    filterMap();
+  }
+  
 }
 
 function removeFilter(filter_string) {
