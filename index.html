@@ -177,6 +177,7 @@
   <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
   <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
   <!-- // <script src="stations.js"></script> -->
+  <script type="text/javascript" src='interactive_map_resources/train_lines.geojson'></script>
 
 <div id='map'></div>
 <div class='heading'>
@@ -331,7 +332,7 @@ d3.select('#select-list').on("change", function(){
   selection = all_filters[eval(d3.select(this).property('value'))];
   added_filter = selection;
   if (categorical_filters.indexOf(selection) >= 0) {
-    values = filter_dict[selection];
+    values = filter_dict[selection].sort();
     document.getElementById('numerical_options').style.display = 'none';
     document.getElementById('date_options').style.display = 'none';
     document.getElementById('categorical_options').style.display = 'block';
@@ -363,6 +364,28 @@ var map = L.mapbox.map('map', 'mapbox.streets', {zoomControl: false})
   .setView([40.73, -73.95],12);
 new L.Control.Zoom({position:'topright'}).addTo(map);
 
+var polylines = L.layerGroup();
+
+for (i in train_lines.features) {
+  var line = train_lines.features[i];
+  var geo = line.geometry;
+  var prop = line.properties;
+  var train = prop.route_id;
+  var segments = geo.coordinates;
+
+  for (j in segments) {
+    var segment = segments[j]; 
+    var polyline = L.polyline([],{color: '#000',weight:1,opacity:1});
+    for (point in segment) {
+      var coord = [];
+      coord.push(segment[point][1]);
+      coord.push(segment[point][0]);
+      polyline.addLatLng(coord);
+    }
+    polylines.addLayer(polyline);
+  }
+}
+
 
 var defects = L.mapbox.featureLayer();
 defects.loadURL('https://raw.githubusercontent.com/samlpollack/Broken-Rails/master/interactive_map_resources/map_data.geojson?token=ALInTFqo3vjIfl3wV3gRWu15fsguHnyuks5WMRnrwA%3D%3D');
@@ -385,12 +408,14 @@ map.on('zoomend', function() {
       console.log('heat -> cluster')
       map.removeLayer(heat);
       map.addLayer(clusterGroup);
+      polylines.addTo(map);
     } 
   } else {
     if (map.hasLayer(clusterGroup)) {
       console.log('cluster -> heat')
       map.removeLayer(clusterGroup);
       map.addLayer(heat);
+      map.removeLayer(polylines);
     }
   }
 });
@@ -693,7 +718,6 @@ function filterMap() {
   map.removeLayer(clusterGroup);
   map.removeLayer(heat);
   heat = L.heatLayer([]);
-  // clusterGroup = new L.MarkerClusterGroup();
   clusterGroup.clearLayers();
 
   var timeline = {2005:0,2006:0,2007:0,2008:0,2009:0,2010:0,2011:0,2012:0,2013:0,2014:0,2015:0};
